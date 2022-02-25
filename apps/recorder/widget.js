@@ -70,6 +70,8 @@
           stop : () => {
             Bangle.removeListener('accel', onACC);
           },
+		  draw : (x,y) => g.setColor(Bangle.isHRMOn()?"#f00":"#f88").drawImage(atob("DAwBAAAAMMeef+f+f+P8H4DwBgAA"),x,y)
+
         };
       },
 	  
@@ -97,6 +99,8 @@
             Bangle.removeListener('mag', onMAG);
 			Bangle.setCompassPower(0);
           },
+		  draw : (x,y) => g.setColor(Bangle.isHRMOn()?"#f00":"#f88").drawImage(atob("DAwBAAAAMMeef+f+f+P8H4DwBgAA"),x,y)
+
         };
       },
     };
