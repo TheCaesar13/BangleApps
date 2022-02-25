@@ -19,56 +19,19 @@
 
   function getRecorders() {
     var recorders = {
-      gps:function() {
-        var lat = 0;
-        var lon = 0;
-        var alt = 0;
-        var samples = 0;
-        var hasFix = 0;
-        function onGPS(f) {
-          hasFix = f.fix;
-          if (!hasFix) return;
-          lat += f.lat;
-          lon += f.lon;
-          alt += f.alt;
-          samples++;
-        }
-        return {
-          name : "GPS",
-          fields : ["Latitude","Longitude","Altitude"],
-          getValues : () => {
-            var r = ["","",""];
-            if (samples)
-              r = [(lat/samples).toFixed(6),(lon/samples).toFixed(6),Math.round(alt/samples)];
-            samples = 0; lat = 0; lon = 0; alt = 0;
-            return r;
-          },
-          start : () => {
-            hasFix = false;
-            Bangle.on('GPS', onGPS);
-            Bangle.setGPSPower(1,"recorder");
-          },
-          stop : () => {
-            hasFix = false;
-            Bangle.removeListener('GPS', onGPS);
-            Bangle.setGPSPower(0,"recorder");
-          },
-          draw : (x,y) => g.setColor(hasFix?"#0f0":"#f88").drawImage(atob("DAwBEAKARAKQE4DwHkPqPRGKAEAA"),x,y)
-        };
-      },
       hrm:function() {
-        var bpm = "", bpmConfidence = "", src="";
+        var bpm = "", bpmConfidence = "", ppg="";
         function onHRM(h) {
           bpmConfidence = h.confidence;
           bpm = h.bpm;
-          srv = h.src;
+          ppg = analogRead(D29);
         }
         return {
           name : "HR",
-          fields : ["Heartrate", "Confidence", "Source"],
+          fields : ["Heartrate", "Confidence", "PPG"],
           getValues : () => {
-            var r = [bpm,bpmConfidence,src];
-            bpm = ""; bpmConfidence = ""; src="";
+            var r = [bpm,bpmConfidence,ppg];
+            bpm = ""; bpmConfidence = ""; ppg="";
             return r;
           },
           start : () => {
@@ -94,7 +57,7 @@
 		  magnitude = a.mag;
         }
         return {
-          name : "Accelerometer",
+          name : "Accel",
           fields : ["X", "Y", "Z", "Magnitude"],
           getValues : () => {
             var r = [xcoord, ycoord, zcoord, magnitude];
@@ -119,7 +82,7 @@
 		  heading = m.heading;
         }
         return {
-          name : "Magnetometer",
+          name : "Magneto",
           fields : ["dX", "dY", "dZ", "Heading"],
           getValues : () => {
             var r = [dxcoord, dycoord, dzcoord, heading];
@@ -136,36 +99,6 @@
           },
         };
       },
-	  
-      bat:function() {
-        return {
-          name : "BAT",
-          fields : ["Battery Percentage", "Battery Voltage", "Charging"],
-          getValues : () => {
-            return [E.getBattery(), NRF.getBattery(), Bangle.isCharging()];
-          },
-          start : () => {
-          },
-          stop : () => {
-          },
-          draw : (x,y) => g.setColor(Bangle.isCharging() ? "#0f0" : "#ff0").drawImage(atob("DAwBAABgH4G4EYG4H4H4H4GIH4AA"),x,y)
-        };
-      },
-      steps:function() {
-        var lastSteps = 0;
-        return {
-          name : "Steps",
-          fields : ["Steps"],
-          getValues : () => {
-            var c = Bangle.getStepCount(), r=[c-lastSteps];
-            lastSteps = c;
-            return r;
-          },
-          start : () => { lastSteps = Bangle.getStepCount(); },
-          stop : () => {},
-          draw : (x,y) => g.reset().drawImage(atob("DAwBAAMMeeeeeeeecOMMAAMMMMAA"),x,y)
-        };
-      }
     };
     if (Bangle.getPressure){
       recorders['baro'] = function() {
